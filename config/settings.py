@@ -40,7 +40,7 @@ INSTALLED_APPS = [
 ]
 
 INSTALLED_APPS += [
-	'account',
+    'ai',
 ]
 
 MIDDLEWARE = [
