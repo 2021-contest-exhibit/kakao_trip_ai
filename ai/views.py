@@ -5,7 +5,12 @@ import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from scipy import spatial
+import requests
+from modak_server import base
 
+base.create_base_data()
+data = base.get_base_data()
+print(data)
 
 embedder = SentenceTransformer('distiluse-base-multilingual-cased')
 
