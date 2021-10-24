@@ -1,7 +1,6 @@
 from django.shortcuts import render
 import requests
 from django.http import HttpResponse
-import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from scipy import spatial
