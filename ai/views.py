@@ -18,11 +18,11 @@ with open('./campings.json', "r") as json_file:
 with open('./camping.json', "r") as json_file:
     camping_embedding_dict = json.load(json_file)
 
-embedder = SentenceTransformer('distiluse-base-multilingual-cased')
 
 print("ai 준비완료")
 
 def index(request):
+    embedder = SentenceTransformer('distiluse-base-multilingual-cased')
     # base.create_base_data()
 
     corpus = intro_list
@@ -73,7 +73,7 @@ def recommend(req):
         return JsonResponse(data)
 
 def patch_campings_embedding(req):
-
+    embedder = SentenceTransformer('distiluse-base-multilingual-cased')
     file_path = './camping.json'
     data = {}
 
