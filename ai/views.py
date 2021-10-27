@@ -8,18 +8,21 @@ import requests
 from modak_server import base
 import json
 from urllib import request, parse
+from django.http import JsonResponse
 
 base_list, intro_list = base.get_base_data()
-
+closest_n = 5
 with open('./campings.json', "r") as json_file:
     corpus_embeddings = json.load(json_file)["data"]
+
+with open('./camping.json', "r") as json_file:
+    camping_embedding_dict = json.load(json_file)
 
 embedder = SentenceTransformer('distiluse-base-multilingual-cased')
 
 print("ai 준비완료")
 
 def index(request):
-    closest_n = 5
     # base.create_base_data()
 
     corpus = intro_list
@@ -45,20 +48,29 @@ def index(request):
     return HttpResponse(res)
 
 def recommend(req):
+    if req.method == "POST":
+        contentId_list = json.loads(req.body)["contentIdList"]
+        contentId_list.sort()
+        print(contentId_list)
+        base_embedding = [camping_embedding_dict[str(contentId)] for contentId in contentId_list ]
+        distances = spatial.distance.cdist(base_embedding,corpus_embeddings, "cosine")[0]
+        results = zip(range(len(distances)), distances)
+        results = sorted(results, key=lambda x: x[1])
 
-    print(len(base_list[0].embedding))
-    base_embedding = np.array(base_list[0].embedding)
-    print(base_embedding)
-    print(base_embedding.shape, base_embedding.ndim)
-    distances = spatial.distance.cdist([base_embedding],corpus_embeddings, "cosine")[0]
-    results = zip(range(len(distances)), distances)
-    results = sorted(results, key=lambda x: x[1])
 
-    res = ''
-    for idx, distance in results[0:closest_n]:
-        res += str(corpus[idx].strip()) + str(f'Score : {(1 - distance):4f}' + '<p>')
 
-    return HttpResponse(res)
+        res = []
+        for idx, distance in results:
+            # res += str(intro_list[idx].strip()) + str(f'Score : {(1 - distance):4f}' + '<p>')
+            if len(res) >= closest_n:
+                break
+
+            if base_list[idx].contentId not in contentId_list:
+                res.append(base_list[idx].contentId)
+
+        data = { 'data' : res}
+
+        return JsonResponse(data)
 
 def patch_campings_embedding(req):
 
