@@ -60,8 +60,11 @@ def recommend(req):
 
 
         res = []
-        for idx, distance in results[0:closest_n + len(contentId_list)]:
+        for idx, distance in results:
             # res += str(intro_list[idx].strip()) + str(f'Score : {(1 - distance):4f}' + '<p>')
+            if len(res) >= closest_n:
+                break
+
             if base_list[idx].contentId not in contentId_list:
                 res.append(base_list[idx].contentId)
 
