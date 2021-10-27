@@ -10,7 +10,6 @@ import json
 from urllib import request, parse
 from django.http import JsonResponse
 
-base_list, intro_list = base.get_base_data()
 closest_n = 5
 with open('./campings.json', "r") as json_file:
     corpus_embeddings = json.load(json_file)["data"]
@@ -18,10 +17,14 @@ with open('./campings.json', "r") as json_file:
 with open('./camping.json', "r") as json_file:
     camping_embedding_dict = json.load(json_file)
 
+with open('./idx.json', "r") as json_file:
+    contentId_dict = json.load(json_file)
+
 
 print("ai 준비완료")
 
 def index(request):
+    base_list, intro_list = base.get_base_data()
     embedder = SentenceTransformer('distiluse-base-multilingual-cased')
     # base.create_base_data()
 
@@ -65,14 +68,15 @@ def recommend(req):
             if len(res) >= closest_n:
                 break
 
-            if base_list[idx].contentId not in contentId_list:
-                res.append(base_list[idx].contentId)
+            if contentId_dict[str(idx)] not in contentId_list:
+                res.append(contentId_dict[str(idx)])
 
         data = { 'data' : res}
 
         return JsonResponse(data)
 
 def save_idxAndcontentId(req):
+    base_list, intro_list = base.get_base_data()
     file_path = './idx.json'
     data = {}
     for i,base in enumerate(base_list):
@@ -84,6 +88,7 @@ def save_idxAndcontentId(req):
     return HttpResponse("ok")
 
 def patch_campings_embedding(req):
+    base_list, intro_list = base.get_base_data()
     embedder = SentenceTransformer('distiluse-base-multilingual-cased')
     file_path = './camping.json'
     data = {}
