@@ -72,6 +72,17 @@ def recommend(req):
 
         return JsonResponse(data)
 
+def save_idxAndcontentId(req):
+    file_path = './idx.json'
+    data = {}
+    for i,base in enumerate(base_list):
+        data[str(i)] = base.contentId
+
+    with open(file_path, 'w') as outfile:
+        json.dump(data, outfile)
+
+    return HttpResponse("ok")
+
 def patch_campings_embedding(req):
     embedder = SentenceTransformer('distiluse-base-multilingual-cased')
     file_path = './camping.json'
