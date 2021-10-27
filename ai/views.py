@@ -29,7 +29,9 @@ def index(request):
     request_data = request.GET.get('data')
     query_embedding = embedder.encode([request_data])
 
-    print([query_embedding[0]])
+    print(len(query_embedding[0]), query_embedding[0].shape)
+
+    print(query_embedding[0])
 
     distances = spatial.distance.cdist([query_embedding[0]], corpus_embeddings, "cosine")[0]
     results = zip(range(len(distances)), distances)
@@ -42,17 +44,35 @@ def index(request):
 
     return HttpResponse(res)
 
+def recommend(req):
+
+    print(len(base_list[0].embedding))
+    base_embedding = np.array(base_list[0].embedding)
+    print(base_embedding)
+    print(base_embedding.shape, base_embedding.ndim)
+    distances = spatial.distance.cdist([base_embedding],corpus_embeddings, "cosine")[0]
+    results = zip(range(len(distances)), distances)
+    results = sorted(results, key=lambda x: x[1])
+
+    res = ''
+    for idx, distance in results[0:closest_n]:
+        res += str(corpus[idx].strip()) + str(f'Score : {(1 - distance):4f}' + '<p>')
+
+    return HttpResponse(res)
+
 def patch_campings_embedding(req):
 
-
-    headers = {'Content-Type': 'application/json; chearset=utf-8'}
+    file_path = './camping.json'
+    data = {}
 
     for base in base_list:
-        intro_embedding = embedder.encode([base.intro])
-        res = requests.patch('http://localhost:8080/opendata/base', headers=headers, data=json.dumps({
-            'contentId': base.contentId,
-            'embedding': str(intro_embedding)
-        }).encode('utf-8'))
+        intro_embeddings = embedder.encode([base.intro])
+        data[str(base.contentId)] = intro_embeddings[0].tolist()
+
+
+    with open(file_path, 'w') as outfile:
+        json.dump(data, outfile)
+
 
     return HttpResponse("ok")
 
